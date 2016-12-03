@@ -60,3 +60,32 @@
 
 将winrar2.exe加载到ollydbg里面，仍旧跳转到0xa17e2这个地址。
 
+![code4](code4.png)
+
+这里可以看到，原本全部是NOP的指令，中间出现了一些奇怪的test指令。具体的原因，就是这段内存数据里面0x90之间里面夹带了一些0x85，因为汇编解析的原因，把0x85开头的命令解析成了test指令。导致了一些乱七八糟的指令，甚至原本的test eax的指令也出被污染了。所以执行完这一段代码就出现了异常，崩溃了。
+
+如果你结束这次调试，重新加载winrar2.exe到ollydbg中，你会发现，0x90中间夹带的数字还是变化的，无法预测的。
+
+## ASLR 地址空间分配随机化
+
+之所以会出现这种0x90中间夹带一些奇怪的数据的现象，原因是windows内核支持的一个ASLR特性导致的。在win7内核中，如果应用程序愿意，可以让系统将自己的代码加载到随机的地址空间然后通过reloc段提供的信息去将代码里面的调用地址进行重定位。上面的0x90中间本身有两个call，所以重定位之后就出现了一些奇怪的数据。
+
+这个特性也直接导致了代码执行的时候函数调用的位置完全随机化，所以API monitor那里得到的地址只有偏移地址有用。
+
+## 抹除ASLR特性
+
+那么既然知道是ASLR导致的影响，就把这个玩意绕过就是了。
+
+ASLR特性的开关由PE文件的IMAGE_NT_HEADERS下面的IMAGE_OPTIONAL_HEADER下面的Dll characteristics字段的第十个bit决定。也就是如果0x40按位与为非0，就开启ASLR特性。因为ASLR只在比较新的windows内核支持，windows xp就不支持这个特性，所以ASLR的开启需要PE文件支持，同时，如果这个位被设置为0，这个特性也就关掉了。
+
+使用PEView打开winrar2.exe文件，可以看到如下内容：
+
+![peview](peview.png)
+
+可以看到，文件偏移量0x176的Dll characteristics字段，值为0x8140，其中40表示开启ASLR，使用hex editor将winrar2.exe的这个地方改成0x8100，就可以关闭ASLR特性了，同时保存成winrar3.exe，打开winrar3.exe，就会发现ASLR关闭，NOP中就不会出现其他数字了。
+
+至此，winrar广告移除完成。
+
+
+
+
