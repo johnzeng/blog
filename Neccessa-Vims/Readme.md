@@ -11,6 +11,7 @@
 
 ## index
 
+- vi的原则
 - 插件，管理
 - help
 - map与abbreviate
