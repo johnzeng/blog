@@ -1,36 +1,62 @@
 #include <linux/module.h>
 #include <linux/kprobes.h>
 #include <linux/kallsyms.h>
+#include <linux/mm.h>
 
-struct jprobe exec_jp;
+struct jprobe get_user_pages_jp;
+struct jprobe handle_mm_fault_jp;
+struct jprobe follow_page_jp;
 
+int __jp_get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+		     unsigned long start, int nr_pages, unsigned int gup_flags,
+		     struct page **pages, struct vm_area_struct **vmas,
+             int *nonblocking){
 
-int jp_do_execve(const char * filename,
-    const char __user *const __user *argv,
-    const char __user *const __user *envp,
-    struct pt_regs * regs)
-{
-    int cnt = 0;
+    
+    jprobe_return();
+    return 0;
 
-    printk("filename = %s\n", filename);
+}
 
-    for(; *argv != NULL;argv++,cnt++)
-        printk("argv[%d] = %s\n", cnt, *argv);
+int jp_handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+		unsigned long address, unsigned int flags){
 
     jprobe_return();
     return 0;
+
 }
 
+struct page *jp_follow_page(struct vm_area_struct *vma, unsigned long address,
+			unsigned int flags)
+
+
+    jprobe_return();
+    return 0;
+
+}
 
 static __init int jprobes_exec_init(void)
 {    
-    exec_jp.kp.symbol_name = "do_execve";
+    get_user_pages_jp.kp.symbol_name = "__get_user_pages";
 
-    exec_jp.entry = JPROBE_ENTRY(jp_do_execve);
+    get_user_pages_jp.entry = JPROBE_ENTRY(__jp_get_user_pages);
 
     /*注册jprobes*/
-    register_jprobe(&exec_jp);
+    register_jprobe(&get_user_pages_jp);
     
+    handle_mm_fault_jp.kp.symbol_name = "handle_mm_fault";
+
+    handle_mm_fault_jp.entry = JPROBE_ENTRY(jp_handle_mm_fault);
+
+    /*注册jprobes*/
+    register_jprobe(&handle_mm_fault_jp);
+
+    follow_page_jp.kp.symbol_name = "follow_page";
+
+    follow_page_jp.entry = JPROBE_ENTRY(jp_follow_page);
+
+    /*注册jprobes*/
+    register_jprobe(&follow_page_jp);
     return 0;
 }
 
@@ -39,7 +65,9 @@ static __init int jprobes_exec_init(void)
 static __exit void jprobes_exec_cleanup(void)
 {
     /*撤销jprobes注册*/
-    unregister_jprobe(&exec_jp);
+    unregister_jprobe(&get_user_pages_jp);
+    unregister_jprobe(&handle_mm_fault_jp);
+    unregister_jprobe(&follow_page_jp);
 }
 
 module_init(jprobes_exec_init); 
