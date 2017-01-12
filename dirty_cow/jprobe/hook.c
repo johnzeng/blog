@@ -2,6 +2,7 @@
 #include <linux/kprobes.h>
 #include <linux/kallsyms.h>
 #include <linux/mm.h>
+#include <linux/string.h>
 
 struct jprobe get_user_pages_jp;
 struct jprobe handle_mm_fault_jp;
@@ -11,8 +12,10 @@ int __jp_get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
 		     unsigned long start, int nr_pages, unsigned int gup_flags,
 		     struct page **pages, struct vm_area_struct **vmas,
              int *nonblocking){
-
-    
+    char *command = current->comm;
+    if (strcmp(command, "dcopoc") == 0) {
+        printk("go into get user pages");
+    }
     jprobe_return();
     return 0;
 
@@ -21,6 +24,10 @@ int __jp_get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
 int jp_handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 		unsigned long address, unsigned int flags){
 
+    char *command = current->comm;
+    if (strcmp(command, "dcopoc") == 0) {
+        printk("go into mm fault, address and flag is : %ld, %d", address, flags);
+    }
     jprobe_return();
     return 0;
 
@@ -28,8 +35,11 @@ int jp_handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 
 struct page *jp_follow_page(struct vm_area_struct *vma, unsigned long address,
 			unsigned int flags)
-
-
+{
+    char *command = current->comm;
+    if (strcmp(command, "dcopoc") == 0) {
+        printk("go into follow pages, address and flag is : %ld, %d", address, flags);
+    }
     jprobe_return();
     return 0;
 
