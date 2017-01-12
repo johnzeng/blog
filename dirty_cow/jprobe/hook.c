@@ -14,7 +14,7 @@ int __jp_get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
              int *nonblocking){
     char *command = current->comm;
     if (strcmp(command, "dcopoc") == 0) {
-        printk("go into get user pages");
+        printk("go into get user pages\n");
     }
     jprobe_return();
     return 0;
@@ -26,19 +26,19 @@ int jp_handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 
     char *command = current->comm;
     if (strcmp(command, "dcopoc") == 0) {
-        printk("go into mm fault, address and flag is : %ld, %d", address, flags);
+        printk("go into mm fault, address and flag is : %ld, %d\n", address, flags);
     }
     jprobe_return();
     return 0;
 
 }
-
-struct page *jp_follow_page(struct vm_area_struct *vma, unsigned long address,
-			unsigned int flags)
+struct page *jp_follow_page_mask(struct vm_area_struct *vma,
+                    unsigned long address, unsigned int flags,
+                    unsigned int *page_mask)
 {
     char *command = current->comm;
     if (strcmp(command, "dcopoc") == 0) {
-        printk("go into follow pages, address and flag is : %ld, %d", address, flags);
+        printk("go into follow pages, address and flag is : %ld, %d\n", address, flags);
     }
     jprobe_return();
     return 0;
@@ -47,6 +47,7 @@ struct page *jp_follow_page(struct vm_area_struct *vma, unsigned long address,
 
 static __init int jprobes_exec_init(void)
 {    
+    //get user pages
     get_user_pages_jp.kp.symbol_name = "__get_user_pages";
 
     get_user_pages_jp.entry = JPROBE_ENTRY(__jp_get_user_pages);
@@ -54,6 +55,7 @@ static __init int jprobes_exec_init(void)
     /*注册jprobes*/
     register_jprobe(&get_user_pages_jp);
     
+    //handle mm fault
     handle_mm_fault_jp.kp.symbol_name = "handle_mm_fault";
 
     handle_mm_fault_jp.entry = JPROBE_ENTRY(jp_handle_mm_fault);
@@ -61,9 +63,10 @@ static __init int jprobes_exec_init(void)
     /*注册jprobes*/
     register_jprobe(&handle_mm_fault_jp);
 
-    follow_page_jp.kp.symbol_name = "follow_page";
+    //follow page
+    follow_page_jp.kp.symbol_name = "follow_page_mask";
 
-    follow_page_jp.entry = JPROBE_ENTRY(jp_follow_page);
+    follow_page_jp.entry = JPROBE_ENTRY(jp_follow_page_mask);
 
     /*注册jprobes*/
     register_jprobe(&follow_page_jp);
