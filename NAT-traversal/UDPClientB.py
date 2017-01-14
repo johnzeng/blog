@@ -2,7 +2,7 @@ import socket
 import sys
 import time
 
-HOST, PORT = "localhost", int(sys.argv[1])
+HOST, PORT = sys.argv[1], int(sys.argv[2])
 data = "hello"
 
 # SOCK_DGRAM is the socket type to use for UDP sockets
