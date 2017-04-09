@@ -55,9 +55,7 @@ OK，我们看看这个文件是什么样子的：
 	<key>Version</key>
 	<string>3</string>
 	<key>Signature</key>
-	<data>dccxgF2vo1+M6IXkERa3Rs7ND2NzItG5erTEhXAX9wHV/9Z5cPg7b1bN2nwIsvOG3cQqb2o6nKEK
-PtcZoDjsT1AHvLp1DjNRCYdTjc72la5U9IOUR8RS14ydP11DqDhgbO86xiC/C2cAp+leiw8utexA
-m1xuSlAwxRx2XfmTvqc=
+	<data>dccx
 </data>
 </dict>
 </plist>
