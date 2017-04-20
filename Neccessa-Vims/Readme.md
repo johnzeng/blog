@@ -11,8 +11,8 @@
 
 ## index
 
-- vi使用的基本原则
-- 插件，管理
+- [vi使用的基本原则](./base.md)
+- [插件，管理](./plugins.md)
 - help
 - map与abbreviate
 - 文件内查找与替换
