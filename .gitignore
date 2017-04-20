@@ -6,4 +6,4 @@
 *.module
 Module.symvers
 *.ko
-
+a.out
